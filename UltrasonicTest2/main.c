@@ -27,18 +27,18 @@ void main(void)
 //  P1IES &= ~BIT5;    // rising edge on ECHO pin
   P1IES |= BIT5;  //falling edge
   NVIC->ISER[1] |= 1 << (PORT1_IRQn & 31);
-  __enable_interrupt();                         // global interrupt enable
+  __enable_interrupt();  // global interrupt enable
 
 
-  TA0CCR0 = 60000;
+  TA0CCR0 = 60000; //set the timer
   trigger();
-  while (1) {
+  while (1) { //so that the program stop eruptly
   }
 }
 
 void trigger() {
     P2OUT |= BIT4;     // Set P2.4 as HIGH
-    __delay_cycles(10);         // for 10us
+    __delay_cycles(10);   // for 10us
     P2OUT &= ~BIT4;    // stop pulse
     TIMER_A0->CTL |= TIMER_A_CTL_CLR; //clear the timer
 }
@@ -47,17 +47,12 @@ void PORT1_IRQHandler(void){
     if(P1IFG & BIT5)  //is there interrupt pending?
     {
       sensor = TA0R / 3;    //calculating ECHO lenght
-      distance = sensor/148;           // converting ECHO lenght into cm
+      distance = sensor/148;  // converting ECHO lenght into cm
       printf("%d\n", distance);
       __delay_cycles(20 * 60 * 1000);
       trigger();
     }
-      P1IFG &= ~BIT5;             //clear flag
-}
-
-void TA0_0_IRQHandler(void){
-    seconds++;
-    printf("seconds: %d\n", seconds);
+      P1IFG &= ~BIT5;   //clear flag
 }
 
 void delayUs(int n)
