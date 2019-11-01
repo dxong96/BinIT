@@ -10,14 +10,15 @@
 
 
     #define BUFFER_SIZE 2048
-    #define  WB BIT6
     #define UART1B BIT2
     #define UART2B BIT3
 
+    void init();
     void sendString(const char *string);
     int bufferAvailable(void);
     int waitForReply(int length, ...);
-    void wifi(void);
+    void waitForRequestReply();
+    char * getReply();
 
 
 #endif /* WIFI_H_ */
