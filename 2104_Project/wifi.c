@@ -64,58 +64,41 @@ int waitForReply(int length, ...) {
     return -1;
 }
 
+void waitForRequestReply() {
+    int i, y;
+    i = 0;
 
-void wifi(){
+    __delay_cycles(3000000); // delay 1s
 
-    int reply = -1;
+    for (y = 0; y < 10; y++) {
+        // delay 10ms
+        __delay_cycles(30000);
+        while(bufferAvailable()) {
+            // copy for reading, should be read before calling another command
+            replyBuffer[i++] = rxBuffer[readPointer++];
+        }
+        // end with null character
+        replyBuffer[i] = 0;
+    }
+}
 
-      // Configure UART pins
-      P3SEL0 |= UART1B | UART2B;                  // set 2-UART pin as second function
-      P3SEL1 &= ~(UART1B | UART2B);
+void init() {
+    // Configure UART pins
+    P3SEL0 |= UART1B | UART2B;                  // set 2-UART pin as second function
+    P3SEL1 &= ~(UART1B | UART2B);
 
-      P1->SEL0 &= ~WB;
-      P1->SEL1 &= ~WB;
-      P1->DIR &= ~WB;
+    EUSCI_A2->CTLW0 |= 1;
+    EUSCI_A2->MCTLW = 0;
+    EUSCI_A2->CTLW0 = 0x0081;
+    EUSCI_A2->BRW = 26;
+    EUSCI_A2->CTLW0 &= ~1;
+    EUSCI_A2->IE |= BIT0;
 
-      EUSCI_A2->CTLW0 |= 1;
-      EUSCI_A2->MCTLW = 0;
-      EUSCI_A2->CTLW0 = 0x0081;
-      EUSCI_A2->BRW = 26;
-      EUSCI_A2->CTLW0 &= ~1;
-      EUSCI_A2->IE |= BIT0;
+    NVIC->ISER[0] = 1 << ((EUSCIA2_IRQn) & 31); // Enable eUSCIA2 interrupt in NVIC module
+}
 
-      __enable_interrupt();
-      NVIC->ISER[0] = 1 << ((EUSCIA2_IRQn) & 31); // Enable eUSCIA2 interrupt in NVIC module
-
-      sendString("+++");
-      __delay_cycles(3000000);
-
-      sendString("AT\r\n");
-      waitForReply(1, "OK");
-
-      sendString("AT+CWMODE_CUR=1\r\n");
-      waitForReply(1, "OK");
-
-      sendString("AT+CWJAP_CUR=\"Dx phone\",\"97875031\"\r\n");
-      reply = waitForReply(2, "OK", "FAIL");
-      if (reply == 1) {
-          printf("Fail to connect to AP");
-          return 1;
-      }
-
-      sendString("AT+CIPSTART=\"TCP\",\"api.themoviedb.org\",80\r\n");
-      waitForReply(3, "OK", "ERROR", "ALREADY CONNECTED");
-
-      sendString("AT+CIPMODE=1\r\n");
-      waitForReply(1, "OK");
-
-      sendString("AT+CIPSEND\r\n");
-      waitForReply(1, ">");
-      sendString("GET /3/search/movie?api_key=f717457915ccf18636da91d9319b25b5&query=a+beautiful+mind HTTP/1.0\r\n\r\n");
-      while (1) {
-          __no_operation();
-      }
-
+char * getReply() {
+    return replyBuffer;
 }
 
 // UART interrupt service routine
