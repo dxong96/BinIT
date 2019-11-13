@@ -9,6 +9,7 @@ GEN_CMDS__FLAG :=
 
 ORDERED_OBJS += \
 "./config.obj" \
+"./lcd16.obj" \
 "./main.obj" \
 "./startup_msp432p401r_ccs.obj" \
 "./system_msp432p401r.obj" \
@@ -158,8 +159,8 @@ all: $(OBJS) $(CMD_SRCS) $(GEN_CMDS)
 # Other Targets
 clean:
 	-$(RM) $(BIN_OUTPUTS__QUOTED)$(EXE_OUTPUTS__QUOTED)
-	-$(RM) "config.obj" "main.obj" "startup_msp432p401r_ccs.obj" "system_msp432p401r.obj" "temp_sensor.obj" "ultrasonic.obj" "wifi.obj" 
-	-$(RM) "config.d" "main.d" "startup_msp432p401r_ccs.d" "system_msp432p401r.d" "temp_sensor.d" "ultrasonic.d" "wifi.d" 
+	-$(RM) "config.obj" "lcd16.obj" "main.obj" "startup_msp432p401r_ccs.obj" "system_msp432p401r.obj" "temp_sensor.obj" "ultrasonic.obj" "wifi.obj" 
+	-$(RM) "config.d" "lcd16.d" "main.d" "startup_msp432p401r_ccs.d" "system_msp432p401r.d" "temp_sensor.d" "ultrasonic.d" "wifi.d" 
 	-@echo 'Finished clean'
 	-@echo ' '
 

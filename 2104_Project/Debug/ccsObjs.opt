@@ -1,1 +1,1 @@
-"./config.obj" "./main.obj" "./startup_msp432p401r_ccs.obj" "./system_msp432p401r.obj" "./temp_sensor.obj" "./ultrasonic.obj" "./wifi.obj" "../msp432p401r.cmd" -llibc.a 
+"./config.obj" "./lcd16.obj" "./main.obj" "./startup_msp432p401r_ccs.obj" "./system_msp432p401r.obj" "./temp_sensor.obj" "./ultrasonic.obj" "./wifi.obj" "../msp432p401r.cmd" -llibc.a 

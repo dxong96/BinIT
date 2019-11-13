@@ -6,44 +6,44 @@ void readTempSensor(float * result) {
                             TIMER_A_CTL_MC_2 |      // CONTINUOUS mode
                             TIMER_A_CTL_CLR;       // Clear TAR
 
-    P4->SEL0 &= ~BIT1;
-    P4->SEL1 &= ~BIT1;
-    P4->DIR &= ~BIT1;
-    P4->REN |= BIT1;
-    P4->OUT |= BIT1;
+    P1->SEL0 &= ~BIT7;
+    P1->SEL1 &= ~BIT7;
+    P1->DIR &= ~BIT7;
+    P1->REN |= BIT7;
+    P1->OUT |= BIT7;
     _delay_cycles(3000);
 
-    P4->REN &= ~BIT1;
-    P4->DIR |= BIT1;
-    P4->OUT &= ~BIT1;
+    P1->REN &= ~BIT7;
+    P1->DIR |= BIT7;
+    P1->OUT &= ~BIT7;
     __delay_cycles(3300);
 
-    P4->DIR &= ~BIT1;
-    P4->REN |= BIT1;
-    P4->OUT |= BIT1;
+    P1->DIR &= ~BIT7;
+    P1->REN |= BIT7;
+    P1->OUT |= BIT7;
 
     __delay_cycles(165);
 
-    while ((P4->IN & BIT1) != 0); // wait for 0
+    while ((P1->IN & BIT7) != 0); // wait for 0
 
 //    printf("got 0\n Waiting for 1\n");
 
-    while ((P4->IN & BIT1) == 0); // wait for 1
+    while ((P1->IN & BIT7) == 0); // wait for 1
 
 //    printf("got 1\n");
 
     int cycles[80];
     int i, start;
 
-    while ((P4->IN & BIT1) != 0); // wait for 0
+    while ((P1->IN & BIT7) != 0); // wait for 0
 
     for (i = 0; i < 80; i += 2) {
         TIMER_A0->CTL |= TIMER_A_CTL_CLR;
-        while ((P4->IN & BIT1) == 0); // waiting for 1
+        while ((P1->IN & BIT7) == 0); // waiting for 1
         cycles[i] = TIMER_A0->R;
 
         TIMER_A0->CTL |= TIMER_A_CTL_CLR;
-        while ((P4->IN & BIT1) != 0); // waiting for 0
+        while ((P1->IN & BIT7) != 0); // waiting for 0
         cycles[i + 1] = TIMER_A0->R;
     }
 

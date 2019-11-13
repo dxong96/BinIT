@@ -11,8 +11,8 @@
 #include <stdio.h>
 #include "msp.h"
 
-#define TB BIT4
-#define UB BIT5
+#define TB BIT0
+#define UB BIT1
 
 
 void trigger(void);

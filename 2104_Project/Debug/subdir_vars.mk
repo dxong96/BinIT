@@ -8,6 +8,7 @@ CMD_SRCS += \
 
 C_SRCS += \
 ../config.c \
+../lcd16.c \
 ../main.c \
 ../startup_msp432p401r_ccs.c \
 ../system_msp432p401r.c \
@@ -17,6 +18,7 @@ C_SRCS += \
 
 C_DEPS += \
 ./config.d \
+./lcd16.d \
 ./main.d \
 ./startup_msp432p401r_ccs.d \
 ./system_msp432p401r.d \
@@ -26,6 +28,7 @@ C_DEPS += \
 
 OBJS += \
 ./config.obj \
+./lcd16.obj \
 ./main.obj \
 ./startup_msp432p401r_ccs.obj \
 ./system_msp432p401r.obj \
@@ -35,6 +38,7 @@ OBJS += \
 
 OBJS__QUOTED += \
 "config.obj" \
+"lcd16.obj" \
 "main.obj" \
 "startup_msp432p401r_ccs.obj" \
 "system_msp432p401r.obj" \
@@ -44,6 +48,7 @@ OBJS__QUOTED += \
 
 C_DEPS__QUOTED += \
 "config.d" \
+"lcd16.d" \
 "main.d" \
 "startup_msp432p401r_ccs.d" \
 "system_msp432p401r.d" \
@@ -53,6 +58,7 @@ C_DEPS__QUOTED += \
 
 C_SRCS__QUOTED += \
 "../config.c" \
+"../lcd16.c" \
 "../main.c" \
 "../startup_msp432p401r_ccs.c" \
 "../system_msp432p401r.c" \
