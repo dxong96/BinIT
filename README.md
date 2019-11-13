@@ -14,9 +14,11 @@ Echo PIN P6.7
 3V3, GND
 ```
 
-### Ultrasonic Sensor 2
+### Ultrasonic Sensor 2 (Internal - distance of bin)
 
 ```
+Height of bin (100%) - 32cm
+Max height to check - 24cm
 Trigger PIN P5.0
 Echo PIN P5.1
 3V3, GND
@@ -34,6 +36,7 @@ Data PIN P1.7
 ```
 PIN1 P6.1
 PIN2 P4.0
+PIN4 P4.5
 PIN5 P4.2
 PIN6 P4.4
 PIN11 P4.3

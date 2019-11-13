@@ -50,7 +50,7 @@ void PORT5_IRQHandler(void){
     if(P5IFG & UB)  //is there interrupt pending?
     {
       sensor = TA0R / 3;    //calculating ECHO lenght
-      distance = sensor/148;  // converting ECHO lenght into cm
+      distance = sensor/53;  // converting ECHO lenght into cm
       printf("%d\n", distance);
       __delay_cycles(20 * 60 * 1000);
       trigger();

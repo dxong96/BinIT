@@ -11,10 +11,10 @@ void main(void)
 {
 	WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;		// stop watchdog timer
 
-	 lcdinit();
-    prints("ICT2104 SIT 2019");
-    gotoXy(0,1);
-    prints("Buttons ISR Demo");
+//	lcdinit();
+////    prints("ICT2104 SIT 2019");
+//    gotoXy(0,1);
+//    prints("Buttons ISR Demo");
 
 //	float result[2];
 //	readTempSensor(result);
