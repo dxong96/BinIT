@@ -13,32 +13,24 @@ int main(void)
 
     init();
 
-    sendString("+++");
-    __delay_cycles(3000000);
+    exitTransferMode();
 
-    sendString("AT\r\n");
-    waitForReply(1, "OK");
-
-    sendString("AT+CWMODE_CUR=1\r\n");
-    waitForReply(1, "OK");
-
-    sendString("AT+CWJAP_CUR=\"Dx phone\",\"97875031\"\r\n");
-    reply = waitForReply(2, "OK", "FAIL");
-    if (reply == 1) {
-        printf("Fail to connect to AP");
+    if(!isReady()) {
+        printf("Wifi not ready exiting.");
         return 1;
     }
 
-    sendString("AT+CIPSTART=\"TCP\",\"www.columbia.edu\",80\r\n");
-    waitForReply(3, "OK", "ERROR", "ALREADY CONNECTED");
+    if (!setWifiMode()) {
+        printf("Fail to set wifi mode");
+        return 1;
+    }
 
-    sendString("AT+CIPMODE=1\r\n");
-    waitForReply(1, "OK");
+    if (!connectToAP("Dx phone", "97875031")) {
+        printf("Fail to connect to access point");
+        return 1;
+    }
 
-    sendString("AT+CIPSEND\r\n");
-    waitForReply(1, ">");
-    sendString("GET /~fdc/nowax.html HTTP/1.0\r\n\r\n");
-    waitForRequestReply();
+    getRequest("google.com", "/");
     printf("http result\n%s\n", getReply());
     while (1) {
         __no_operation();

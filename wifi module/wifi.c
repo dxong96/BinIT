@@ -17,7 +17,17 @@ int writePointer = 0;
 
 // read access variable
 char replyBuffer[BUFFER_SIZE];
+int timeout = 0;
 
+void startTimeout(int ms) {
+    timeout = 0;
+    TIMER32_1->LOAD = 3 * ms * 1000 - 1;
+    TIMER32_1->CONTROL |= BIT7;
+}
+
+void stopTimeout() {
+    TIMER32_1->CONTROL &= ~BIT7;
+}
 
 void sendString(const char *string){
 
@@ -36,6 +46,7 @@ int bufferAvailable() {
 
 
 int waitForReply(int length, ...) {
+    timeout = 0;
     int i = 0;
     int y = 0;
     va_list arguments;
@@ -48,6 +59,10 @@ int waitForReply(int length, ...) {
     }
 
     while (1) {
+        if (timeout) {
+            va_end(arguments);
+            return -1;
+        }
         while(bufferAvailable()) {
             // copy for reading, should be read before calling another command
             replyBuffer[i++] = rxBuffer[readPointer++];
@@ -61,7 +76,6 @@ int waitForReply(int length, ...) {
             }
         }
     }
-    return -1;
 }
 
 void waitForRequestReply() {
@@ -94,11 +108,65 @@ void init() {
     EUSCI_A2->CTLW0 &= ~1;
     EUSCI_A2->IE |= BIT0;
 
+    TIMER32_1->CONTROL = 0x63; // disable; periodic mode, enable interrupt, prescale 0, 32-bit, one shot
+
+    // enable interrupt for timer
+    NVIC->ISER[0] |= 1 << T32_INT1_IRQn;
     NVIC->ISER[0] = 1 << ((EUSCIA2_IRQn) & 31); // Enable eUSCIA2 interrupt in NVIC module
 }
 
 char * getReply() {
     return replyBuffer;
+}
+
+void exitTransferMode() {
+    sendString("+++");
+    __delay_cycles(3000000);
+}
+
+int isReady() {
+    sendString("AT\r\n");
+    startTimeout(3000);
+    int res = waitForReply(1, "OK");
+    return res == 0;
+}
+
+int setWifiMode() {
+    sendString("AT+CWJAP_CUR=\"Dx phone\",\"97875031\"\r\n");
+    startTimeout(15000);
+    int res = waitForReply(1, "OK");
+    return res == 0;
+}
+
+int connectToAP(char * ssid, char * password) {
+    char buf[256];
+    snprintf(buf, 256, "AT+CWJAP_CUR=\"%s\",\"%s\"\r\n", ssid, password);
+    sendString(buf);
+    startTimeout(30000);
+    int reply = waitForReply(2, "OK", "FAIL");
+    if (reply == 1) {
+        printf("Fail to connect to AP");
+    } else if (reply == -1) {
+        printf("Fail to connect to AP due to timeout");
+    }
+    return 1;
+}
+
+void getRequest(char * host, char * path) {
+    char buf[256];
+    snprintf(buf, 256, "AT+CIPSTART=\"TCP\",\"%s\",80\r\n", host);
+    sendString(buf);
+    waitForReply(3, "OK", "ERROR", "ALREADY CONNECTED");
+
+    sendString("AT+CIPMODE=1\r\n");
+    waitForReply(1, "OK");
+
+    sendString("AT+CIPSEND\r\n");
+    waitForReply(1, ">");
+    snprintf(buf, 256, "GET %s HTTP/1.0\r\n\r\n", path);
+    sendString(buf);
+    waitForRequestReply();
+    exitTransferMode();
 }
 
 // UART interrupt service routine
@@ -112,6 +180,13 @@ void EUSCIA2_IRQHandler(void)
     UCA2IFG &= ~UCRXIFG;
 }
 
+void T32_INT1_IRQHandler(void) {
+    if (TIMER32_1->RIS & 1 == 0) return;
+
+    timeout = 1;
+
+    TIMER32_1->INTCLR = 0;
+}
 
 
 
