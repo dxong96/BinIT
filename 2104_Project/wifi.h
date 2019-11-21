@@ -13,7 +13,7 @@
     #define UART1B BIT2
     #define UART2B BIT3
 
-    void init();
+    void initWifi();
     void startTimeout(int ms);
     void stopTimeout();
     void sendString(const char *string);

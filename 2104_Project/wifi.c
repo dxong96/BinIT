@@ -9,6 +9,7 @@
 #include <string.h>
 #include <stdio.h>
 #include "wifi.h"
+#include "timeout.h"
 
 // receive buffer for uart
 char rxBuffer[BUFFER_SIZE];
@@ -18,15 +19,24 @@ int writePointer = 0;
 // read access variable
 char replyBuffer[BUFFER_SIZE];
 int timeout = 0;
+int timeoutId = -1;
+
+void timeoutCallback() {
+    timeout = 1;
+    printf("timeout callback\n");
+}
 
 void startTimeout(int ms) {
+    stopTimeout();
     timeout = 0;
-    TIMER32_1->LOAD = 3 * ms * 1000 - 1;
-    TIMER32_1->CONTROL |= BIT7;
+    timeoutId = setTimeout(ms, timeoutCallback);
 }
 
 void stopTimeout() {
-    TIMER32_1->CONTROL &= ~BIT7;
+    if (timeoutId != -1) {
+        clearTimeout(timeoutId);
+        timeoutId = -1;
+    }
 }
 
 void sendString(const char *string){
@@ -72,6 +82,7 @@ int waitForReply(int length, ...) {
         for (y = 0; y < length; y++) {
             if (strstr(replyBuffer, responses[y]) != NULL) {
                 va_end(arguments);
+                stopTimeout();
                 return y;
             }
         }
@@ -96,7 +107,7 @@ void waitForRequestReply() {
     }
 }
 
-void init() {
+void initWifi() {
     // Configure UART pins
     P3SEL0 |= UART1B | UART2B;                  // set 2-UART pin as second function
     P3SEL1 &= ~(UART1B | UART2B);
@@ -108,10 +119,6 @@ void init() {
     EUSCI_A2->CTLW0 &= ~1;
     EUSCI_A2->IE |= BIT0;
 
-    TIMER32_1->CONTROL = 0x63; // disable; periodic mode, enable interrupt, prescale 0, 32-bit, one shot
-
-    // enable interrupt for timer
-    NVIC->ISER[0] |= 1 << T32_INT1_IRQn;
     NVIC->ISER[0] = 1 << ((EUSCIA2_IRQn) & 31); // Enable eUSCIA2 interrupt in NVIC module
 }
 
@@ -132,7 +139,7 @@ int isReady() {
 }
 
 int setWifiMode() {
-    sendString("AT+CWJAP_CUR=\"Dx phone\",\"97875031\"\r\n");
+    sendString("AT+CWMODE_CUR=1\r\n");
     startTimeout(15000);
     int res = waitForReply(1, "OK");
     return res == 0;
@@ -142,7 +149,7 @@ int connectToAP(char * ssid, char * password) {
     char buf[256];
     snprintf(buf, 256, "AT+CWJAP_CUR=\"%s\",\"%s\"\r\n", ssid, password);
     sendString(buf);
-    startTimeout(30000);
+    startTimeout(45000);
     int reply = waitForReply(2, "OK", "FAIL");
     if (reply == 1) {
         printf("Fail to connect to AP");
@@ -179,15 +186,6 @@ void EUSCIA2_IRQHandler(void)
     }
     UCA2IFG &= ~UCRXIFG;
 }
-
-void T32_INT1_IRQHandler(void) {
-    if (TIMER32_1->RIS & 1 == 0) return;
-
-    timeout = 1;
-
-    TIMER32_1->INTCLR = 0;
-}
-
 
 
 
