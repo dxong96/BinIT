@@ -5,57 +5,82 @@
  *      Author: markpang
  */
 #include "ultrasonic.h"
-#include <stdio.h>
 #include "config.h"
+#include "general_clock.h"
+#include <limits.h>
+#include <stdio.h>
 
-int seconds;
-int distance;
-long sensor;
+int counter1Id;
+int counter2Id;
 
-void trigger(void){
+void (*ultrasonic1Callback)(float) = NULL;
+void (*ultrasonic2Callback)(float) = NULL;
 
-   P5OUT |= TB;     // Set P2.4 as HIGH
-   __delay_cycles(10);   // for 10us
-   P5OUT &= ~TB;    // stop pulse
-   TIMER_A0->CTL |= TIMER_A_CTL_CLR; //clear the timer
+void init_ultrasonic() {
+    // ultrasonic 1
+    P1->DIR |= BIT6;
+    P6->DIR &= ~BIT7;
+
+    P6->IFG &= ~BIT7;
+    P6->IE |= BIT7;
+    P6->IES |= BIT7;
+    NVIC->ISER[1] |= 1 << (PORT6_IRQn & 31);
+    counter1Id = startTracking();
+
+    // ultrasonic 2
+    P5DIR |= TB;     // trigger pin as output
+    P5->DIR &= ~UB;  // set p1.5 input
+
+    P5IFG = 0x00;      // clear flag just in case anything happened before
+    P5IE |= UB;      // enable interupt on ECHO pin
+    P5IES |= UB;  //falling edge
+    NVIC->ISER[1] |= 1 << (PORT5_IRQn & 31);
+    counter2Id = startTracking();
 }
 
+void read_ultrasonic1(void (*callback)(float)){
+    P1->OUT |= BIT6;
+    __delay_cycles(30);
+    P1->OUT &= ~BIT6;
+    resetCounter(counter1Id);
+    ultrasonic1Callback = callback;
+}
 
-void read_ultrasonic(void){
+void read_ultrasonic2(void (*callback)(float)) {
+    P5->OUT |= TB;
+    __delay_cycles(30);
+    P5->OUT &= ~TB;
+    resetCounter(counter2Id);
+    ultrasonic2Callback = callback;
+}
 
-    WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;       // stop watchdog timer
+float calculateDistance(int counterId) {
+    int loops = getLoops(counterId);
+    int counter = getCounter(counterId);
+    if (loops == 1) {
+         counter = INT_MAX - counter;
+    }
+    float ms = counter / 3;
+    float distance = ms / 53;
+    return distance;
+}
 
-      /* Timer_A UpMode Configuration Parameter */
-      TIMER_A0->CTL = TIMER_A_CTL_SSEL__SMCLK|    // SMCLK
-                          TIMER_A_CTL_MC_1 |      // Up mode
-                          TIMER_A_CTL_CLR |       // Clear TAR
-                          TIMER_A_CTL_IE;         // Enable overflow interrupt
-
-      P5DIR |= TB;     // trigger pin as output
-      P5->DIR &= ~UB;  // set p1.5 input
-
-      P5IFG = 0x00;      // clear flag just in case anything happened before
-      P5IE |= UB;      // enable interupt on ECHO pin
-      P5IES |= UB;  //falling edge
-      NVIC->ISER[1] |= 1 << (PORT5_IRQn & 31);
-      __enable_interrupt();  // global interrupt enable
-
-      TA0CCR0 = 60000; //set the timer
-      trigger();
-
-
+void PORT6_IRQHandler(void) {
+    if (P6->IFG & BIT7)
+    {
+        if (ultrasonic1Callback != NULL) {
+            ultrasonic1Callback(calculateDistance(counter1Id));
+        }
+    }
+    P6->IFG &= ~BIT7;
 }
 
 void PORT5_IRQHandler(void){
     if(P5IFG & UB)  //is there interrupt pending?
     {
-      sensor = TA0R / 3;    //calculating ECHO lenght
-      distance = sensor/53;  // converting ECHO lenght into cm
-      printf("%d\n", distance);
-      __delay_cycles(20 * 60 * 1000);
-      trigger();
+        ultrasonic2Callback(calculateDistance(counter2Id));
     }
-      P5IFG &= ~UB;   //clear flag
+    P5IFG &= ~UB;   //clear flag
 }
 
 

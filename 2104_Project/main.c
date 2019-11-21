@@ -1,12 +1,18 @@
 #include "msp.h"
-#include <stdio.h>
 #include "temp_sensor.h"
 #include "ultrasonic.h"
 #include "lcd16.h"
+#include "general_clock.h"
+#include <stdio.h>
 
 /**
  * main.c
  */
+
+void ultrasonic1Handler(float distance) {
+    printf("ultrasonic 1 distance %f\n", distance);
+}
+
 void main(void)
 {
 	WDT_A->CTL = WDT_A_CTL_PW | WDT_A_CTL_HOLD;		// stop watchdog timer
@@ -20,9 +26,12 @@ void main(void)
 //	readTempSensor(result);
 //
 //	printf("celcius %f, humidity: %f", result[0], result[1]);
-
-
-    read_ultrasonic();
+	initializeGeneralClock();
+	init_ultrasonic();
+	while (1) {
+        read_ultrasonic2(ultrasonic1Handler);
+        __delay_cycles(3000000);
+	}
 
 	return 0;
 }

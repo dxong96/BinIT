@@ -15,8 +15,9 @@
 #define UB BIT1
 
 
-void trigger(void);
-void read_ultrasonic(void);
+void init_ultrasonic();
+void read_ultrasonic2(void (*callback)(float));
+void read_ultrasonic1(void (*callback)(float));
 
 
 #endif /* ULTRASONIC_H_ */
