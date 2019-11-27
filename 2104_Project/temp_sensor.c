@@ -2,7 +2,7 @@
 #include "msp.h"
 
 void readTempSensor(float * result) {
-    TIMER_A0->CTL = TIMER_A_CTL_TASSEL_2 |  // SMCLK
+    TIMER_A1->CTL = TIMER_A_CTL_TASSEL_2 |  // SMCLK
                             TIMER_A_CTL_MC_2 |      // CONTINUOUS mode
                             TIMER_A_CTL_CLR;       // Clear TAR
 
@@ -11,7 +11,7 @@ void readTempSensor(float * result) {
     P1->DIR &= ~BIT7;
     P1->REN |= BIT7;
     P1->OUT |= BIT7;
-    _delay_cycles(3000);
+    __delay_cycles(3000);
 
     P1->REN &= ~BIT7;
     P1->DIR |= BIT7;
@@ -33,18 +33,18 @@ void readTempSensor(float * result) {
 //    printf("got 1\n");
 
     int cycles[80];
-    int i, start;
+    int i;
 
     while ((P1->IN & BIT7) != 0); // wait for 0
 
     for (i = 0; i < 80; i += 2) {
-        TIMER_A0->CTL |= TIMER_A_CTL_CLR;
+        TIMER_A1->CTL |= TIMER_A_CTL_CLR;
         while ((P1->IN & BIT7) == 0); // waiting for 1
-        cycles[i] = TIMER_A0->R;
+        cycles[i] = TIMER_A1->R;
 
-        TIMER_A0->CTL |= TIMER_A_CTL_CLR;
+        TIMER_A1->CTL |= TIMER_A_CTL_CLR;
         while ((P1->IN & BIT7) != 0); // waiting for 0
-        cycles[i + 1] = TIMER_A0->R;
+        cycles[i + 1] = TIMER_A1->R;
     }
 
     unsigned char data[5];
@@ -66,9 +66,7 @@ void readTempSensor(float * result) {
     if (data[4] == ((data[0] + data[1] + data[2] + data[3]) & 0xFF)) {
         result[0] = parseCelcius(data);
         result[1] = parseHumidity(data);
-        return result;
     }
-    return 0;
 }
 
 float parseCelcius(unsigned char * data) {
