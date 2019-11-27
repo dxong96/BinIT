@@ -40,7 +40,7 @@ void runServo(void)
     MAP_Interrupt_disableMaster();                // Disabling master interrupts
 
     // Configure clocks
-    startCrystalOscillator();
+//    startCrystalOscillator();
     setSystemClock(CPU_FREQ);
 
     // P1.1 for button interrupt
@@ -79,14 +79,14 @@ void runServo(void)
     MAP_Interrupt_enableSleepOnIsrExit();
     MAP_Interrupt_enableMaster();
 
-    static volatile uint32_t aclk, mclk, smclk, hsmclk, bclk;
-
-    aclk = CS_getACLK();
-    mclk = CS_getMCLK();
-    smclk = CS_getSMCLK();
-    hsmclk = CS_getHSMCLK();
-    bclk = CS_getBCLK();
-
+//    static volatile uint32_t aclk, mclk, smclk, hsmclk, bclk;
+//
+//    aclk = CS_getACLK();
+//    mclk = CS_getMCLK();
+//    smclk = CS_getSMCLK();
+//    hsmclk = CS_getHSMCLK();
+//    bclk = CS_getBCLK();
+//
     /* Sleeping when not in use */
     while (1)
     {
