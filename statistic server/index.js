@@ -18,7 +18,7 @@ try {
     fs.writeFileSync('data.json', '[]');
     dataFd = fs.openSync('data.json', 'r+')
   } else {
-    throw err; 
+    throw err;
   }
 }
 
@@ -41,6 +41,7 @@ const appendTemperatureAndFullness = (temperature, fullness) => {
   }
   fileSize += itemStr.length
 }
+
 
 app.get('/temp_fullness', (req, res) => {
   const {temperature, fullness} = req.query
