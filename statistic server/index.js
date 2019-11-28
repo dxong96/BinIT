@@ -44,6 +44,7 @@ const appendTemperatureAndFullness = (temperature, fullness) => {
 
 
 app.get('/temp_fullness', (req, res) => {
+  console.log(req.query);
   const {temperature, fullness} = req.query
   const temperatureF = parseFloat(temperature)
   const fullnessF = parseFloat(fullness)
