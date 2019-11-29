@@ -8,7 +8,7 @@ Timer_A_PWMConfig pwmConfig =
         60000,                           // 20ms
         TIMER_A_CAPTURECOMPARE_REGISTER_1,
         TIMER_A_OUTPUTMODE_RESET_SET,
-        4500
+        4500 // 1.5ms
 };
 
 void initServo()
@@ -21,17 +21,17 @@ void initServo()
 
 void goToPosition0()
 {
-    pwmConfig.dutyCycle = 3000;
+    pwmConfig.dutyCycle = 3000; // 1ms
     MAP_Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
 }
 void goToPosition90()
 {
-    pwmConfig.dutyCycle = 4500;
+    pwmConfig.dutyCycle = 4500; // 1.5ms
     MAP_Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
 }
 void goToPosition180()
 {
-    pwmConfig.dutyCycle = 6000;
+    pwmConfig.dutyCycle = 6000; // 2ms
     MAP_Timer_A_generatePWM(TIMER_A0_BASE, &pwmConfig);
 }
 

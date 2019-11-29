@@ -6,10 +6,10 @@
  */
 
 #include "msp.h"
-#include <string.h>
-#include <stdio.h>
 #include "wifi.h"
 #include "timeout.h"
+#include <string.h>
+#include <stdio.h>
 
 // receive buffer for uart
 char rxBuffer[BUFFER_SIZE];
@@ -18,12 +18,13 @@ int writePointer = 0;
 
 // read access variable
 char replyBuffer[BUFFER_SIZE];
+
+// timeout variables
 int timeout = 0;
 int timeoutId = -1;
 
 void timeoutCallback() {
     timeout = 1;
-    printf("timeout callback\n");
 }
 
 void startTimeout(int ms) {
@@ -40,7 +41,6 @@ void stopTimeout() {
 }
 
 void sendString(const char *string){
-
     const char * i = string;
     while (*i) {
         UCA2TXBUF = *i;
@@ -112,6 +112,7 @@ void initWifi() {
     P3SEL0 |= UART1B | UART2B;                  // set 2-UART pin as second function
     P3SEL1 &= ~(UART1B | UART2B);
 
+    // configure the baud rate to 112500 for 3Mhz clock
     EUSCI_A2->CTLW0 |= 1;
     EUSCI_A2->MCTLW = 0;
     EUSCI_A2->CTLW0 = 0x0081;
@@ -159,9 +160,9 @@ int connectToAP(char * ssid, char * password) {
     return 1;
 }
 
-void getRequest(char * host, char * path) {
+void getRequest(char * host, char * path, unsigned int port) {
     char buf[256];
-    snprintf(buf, 256, "AT+CIPSTART=\"TCP\",\"%s\",80\r\n", host);
+    snprintf(buf, 256, "AT+CIPSTART=\"TCP\",\"%s\",%d\r\n", host, port);
     sendString(buf);
     waitForReply(3, "OK", "ERROR", "ALREADY CONNECTED");
 
@@ -181,7 +182,9 @@ void EUSCIA2_IRQHandler(void)
 {
     if (UCA2IFG & UCRXIFG)
     {
+        // copy received character to receive buffer
         rxBuffer[writePointer] = UCA2RXBUF;
+        // update the position pointer for writing into the receive buffer
         writePointer = (writePointer + 1) % BUFFER_SIZE;
     }
     UCA2IFG &= ~UCRXIFG;

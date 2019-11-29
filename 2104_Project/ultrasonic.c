@@ -5,7 +5,6 @@
  *      Author: markpang
  */
 #include "ultrasonic.h"
-#include "config.h"
 #include "general_clock.h"
 #include <limits.h>
 #include <stdio.h>
@@ -16,7 +15,7 @@ int counter2Id;
 void (*ultrasonic1Callback)(float) = NULL;
 void (*ultrasonic2Callback)(float) = NULL;
 
-void init_ultrasonic() {
+void initUltrasonic() {
     // ultrasonic 1
     P1->DIR |= BIT6;
     P6->DIR &= ~BIT7;
@@ -38,7 +37,7 @@ void init_ultrasonic() {
     counter2Id = startTracking();
 }
 
-void read_ultrasonic1(void (*callback)(float)){
+void readUltrasonic1(void (*callback)(float)){
     P1->OUT |= BIT6;
     __delay_cycles(30);
     P1->OUT &= ~BIT6;
@@ -46,11 +45,12 @@ void read_ultrasonic1(void (*callback)(float)){
     ultrasonic1Callback = callback;
 }
 
-void read_ultrasonic2(void (*callback)(float)) {
+void readUltrasonic2(void (*callback)(float)) {
     P5->OUT |= TB;
     __delay_cycles(30);
     P5->OUT &= ~TB;
     resetCounter(counter2Id);
+    // set the address to the callback function
     ultrasonic2Callback = callback;
 }
 
@@ -78,6 +78,7 @@ void PORT6_IRQHandler(void) {
 void PORT5_IRQHandler(void){
     if(P5IFG & UB)  //is there interrupt pending?
     {
+        // call the resulting function
         ultrasonic2Callback(calculateDistance(counter2Id));
     }
     P5IFG &= ~UB;   //clear flag
