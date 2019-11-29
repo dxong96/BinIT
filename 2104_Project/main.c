@@ -7,7 +7,6 @@
 #include "wifi.h"
 #include "servo_m.h"
 #include <stdio.h>
-#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
 
 
 #define BIN_HEIGHT 32
@@ -19,10 +18,14 @@ int callServer = 0;
  * main.c
  */
 
+// forward defined functions
 void volumeCheckLoop();
 void binCapLoop();
+
+// the ultrasonic that determines whether to open the bin cap
 void ultrasonic1Handler(float distance) {
     printf("ultrasonic 1 distance %f\n", distance);
+    // when distance is less than 30cm open the bin cap
     if (distance < 30) {
         goToPosition0();
     } else {
@@ -30,7 +33,8 @@ void ultrasonic1Handler(float distance) {
     }
 }
 
-char lcdStrBuffer[100];
+char lcdStrBuffer[100]; // buffer to generate string for lcd display
+// ultrasonic to check the fullness of the bin
 void ultrasonic2Handler(float distance) {
     float percentFull = (BIN_HEIGHT - distance) / BIN_CHECK_HEIGHT * 100;
     if (percentFull < 0) {
@@ -53,23 +57,22 @@ void ultrasonic2Handler(float distance) {
     callServer = 1;
     sprintf(lcdStrBuffer, "/temp_fullness?temperature=%.1f&fullness=%.1f", results[0], percentFull);
 
+    // call wifi function
+    // we did not call the function here due to deadlock if we do call it.
 //    getRequest("192.168.43.58", lcdStrBuffer, 3000);
 
-//    getRequest("192.168.43.154", "/temp_fullness?temperature=29.6&fullness=3.5", 3000);
-
-    // call wifi function
     setTimeout(VOLUME_LOOP_INTERVAL, volumeCheckLoop);
 }
 
 void binCapLoop() {
     printf("binCapLoop\n");
-    read_ultrasonic1(ultrasonic1Handler);
+    readUltrasonic1(ultrasonic1Handler);
     setTimeout(MAIN_LOOP_INTERVAL, binCapLoop);
 }
 
 void volumeCheckLoop() {
     printf("volumeCheckLoop\n");
-    read_ultrasonic2(ultrasonic2Handler);
+    readUltrasonic2(ultrasonic2Handler);
 }
 
 void main(void)
@@ -81,33 +84,15 @@ void main(void)
     P6OUT = 0;
     P4OUT = 0;
 	lcdinit();
-
-
-//	float result[2];
-//	readTempSensor(result);
-//
-//	printf("celcius %f, humidity: %f", result[0], result[1]);
-
 	initTimeout(3000);
 	initializeGeneralClock();
-	init_ultrasonic();
+	initUltrasonic();
 	initServo();
 	goToPosition180();
 
 
-
-	// ultra sonic test
-//	while (1) {
-//        read_ultrasonic2(ultrasonic1Handler);
-//        __delay_cycles(3000000);
-//	}
-
-
 	// wifi test
 	initWifi();
-	printf("%d\n", NVIC_GetPriority(T32_INT1_IRQn));
-	printf("%d\n", NVIC_GetPriority(INT_EUSCIA2));
-
 
 //
     exitTransferMode();
@@ -128,31 +113,18 @@ void main(void)
     }
     volumeCheckLoop();
 
-//    getRequest("192.168.43.58", "/temp_fullness?temperature=29.6&fullness=3.5", 3000);
-
-
-
-
-
-//    getRequest("google.com", "/");
-//    printf("http result\n%s\n", getReply());
-//    while (1) {
-//        __no_operation();
-//    }
-
 	setTimeout(1000, binCapLoop);
 	setTimeout(5000, volumeCheckLoop);
 //
 	while(1){
 	    if (callServer){
-
 	        callServer = 0;
 	        getRequest("192.168.43.58", lcdStrBuffer, 3000);
 
 	    }
 	}
 
-//
+//   we intended to sleep the MCU and let it run only on interrupt but due to the deadlock we have no choice but to write a while loop
 //	 SCB->SCR|= SCB_SCR_SLEEPDEEP_Msk;// Set SLEEPDEEP
 //	 SCB->SCR|= SCB_SCR_SLEEPONEXIT_Msk;// Set SLEEPONEXIT
 //	 __DSB();// Ensures SLEEPONEXIT is set

@@ -22,8 +22,9 @@ int setTimeout(unsigned int ms, void (*callback)()) {
     int i;
     for (i = 0; i < TIMEOUT_SIZE; i++) {
         if (durations[i] == 0) {
+            // set up the variables for running an event after x milliseconds
             durations[i] = ms;
-            timePassed[i];
+            timePassed[i] = 0;
             callbacks[i] = callback;
             return i;
         }
@@ -44,6 +45,7 @@ void T32_INT1_IRQHandler(void) {
             continue;
 
         timePassed[i]++;
+        // time has reached the desired duration
         if (durations[i] == timePassed[i]) {
             clearTimeout(i);
             if (callbacks[i]) {

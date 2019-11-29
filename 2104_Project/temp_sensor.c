@@ -26,11 +26,8 @@ void readTempSensor(float * result) {
 
     while ((P1->IN & BIT7) != 0); // wait for 0
 
-//    printf("got 0\n Waiting for 1\n");
 
     while ((P1->IN & BIT7) == 0); // wait for 1
-
-//    printf("got 1\n");
 
     int cycles[80];
     int i;
@@ -62,7 +59,7 @@ void readTempSensor(float * result) {
         // cycle count so this must be a zero.  Nothing needs to be changed in the
         // stored data.
       }
-
+    // checksum to check if the data is valid
     if (data[4] == ((data[0] + data[1] + data[2] + data[3]) & 0xFF)) {
         result[0] = parseCelcius(data);
         result[1] = parseHumidity(data);
@@ -72,6 +69,7 @@ void readTempSensor(float * result) {
 float parseCelcius(unsigned char * data) {
     float f = ((short)(data[2] & 0x7F)) << 8 | data[3];
     f *= 0.1;
+    // check if data is negative
     if (data[2] & 0x80) {
         f *= -1;
     }
