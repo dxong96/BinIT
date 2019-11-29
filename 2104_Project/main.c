@@ -7,11 +7,14 @@
 #include "wifi.h"
 #include "servo_m.h"
 #include <stdio.h>
+#include <ti/devices/msp432p4xx/driverlib/driverlib.h>
+
 
 #define BIN_HEIGHT 32
 #define BIN_CHECK_HEIGHT 24
 #define MAIN_LOOP_INTERVAL 1000 // every 1s
 #define VOLUME_LOOP_INTERVAL 60000 // every one minute
+int callServer = 0;
 /**
  * main.c
  */
@@ -44,6 +47,15 @@ void ultrasonic2Handler(float distance) {
     gotoXy(0,1);
     sprintf(lcdStrBuffer, "%.1f %% full", percentFull);
     prints(lcdStrBuffer);
+
+    printf("%.1f\n", distance);
+
+    callServer = 1;
+    sprintf(lcdStrBuffer, "/temp_fullness?temperature=%.1f&fullness=%.1f", results[0], percentFull);
+
+//    getRequest("192.168.43.58", lcdStrBuffer, 3000);
+
+//    getRequest("192.168.43.154", "/temp_fullness?temperature=29.6&fullness=3.5", 3000);
 
     // call wifi function
     setTimeout(VOLUME_LOOP_INTERVAL, volumeCheckLoop);
@@ -83,7 +95,6 @@ void main(void)
 	goToPosition180();
 
 
-    volumeCheckLoop();
 
 	// ultra sonic test
 //	while (1) {
@@ -93,25 +104,36 @@ void main(void)
 
 
 	// wifi test
-//	initWifi();
+	initWifi();
+	printf("%d\n", NVIC_GetPriority(T32_INT1_IRQn));
+	printf("%d\n", NVIC_GetPriority(INT_EUSCIA2));
+
+
 //
-//    exitTransferMode();
-//
-//    if(!isReady()) {
-//        printf("Wifi not ready exiting.\n");
-//        return 1;
-//    }
-//
-//    if (!setWifiMode()) {
-//        printf("Fail to set wifi mode\n");
-//        return 1;
-//    }
-//
-//    if (!connectToAP("Dx phone", "97875031")) {
-//        printf("Fail to connect to access point\n");
-//        return 1;
-//    }
-//
+    exitTransferMode();
+
+    if(!isReady()) {
+        printf("Wifi not ready exiting.\n");
+        return 1;
+    }
+
+    if (!setWifiMode()) {
+        printf("Fail to set wifi mode\n");
+        return 1;
+    }
+
+    if (!connectToAP("OnePlus 5T", "pangjunrong")) {
+        printf("Fail to connect to access point\n");
+        return 1;
+    }
+    volumeCheckLoop();
+
+//    getRequest("192.168.43.58", "/temp_fullness?temperature=29.6&fullness=3.5", 3000);
+
+
+
+
+
 //    getRequest("google.com", "/");
 //    printf("http result\n%s\n", getReply());
 //    while (1) {
@@ -120,9 +142,19 @@ void main(void)
 
 	setTimeout(1000, binCapLoop);
 	setTimeout(5000, volumeCheckLoop);
+//
+	while(1){
+	    if (callServer){
 
-	 SCB->SCR|= SCB_SCR_SLEEPDEEP_Msk;// Set SLEEPDEEP
-	 SCB->SCR|= SCB_SCR_SLEEPONEXIT_Msk;// Set SLEEPONEXIT
-	 __DSB();// Ensures SLEEPONEXIT is set
-	 __WFI();
+	        callServer = 0;
+	        getRequest("192.168.43.58", lcdStrBuffer, 3000);
+
+	    }
+	}
+
+//
+//	 SCB->SCR|= SCB_SCR_SLEEPDEEP_Msk;// Set SLEEPDEEP
+//	 SCB->SCR|= SCB_SCR_SLEEPONEXIT_Msk;// Set SLEEPONEXIT
+//	 __DSB();// Ensures SLEEPONEXIT is set
+//	 __WFI();
 }

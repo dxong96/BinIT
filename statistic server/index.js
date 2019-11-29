@@ -77,7 +77,7 @@ const appendTemperatureAndFullness = (temperature, fullness) => {
 
 const sendSMS = (temperature, fullness) => {
 
-  if (temperature >= 40 || fullness >= 90){
+  if (temperature >= 22 || fullness >= 90){
     const body = temperature >=40 ? `temperature ${temperature} above threshold` : `The bin is at ${fullness} full`
     client.messages.create({body: body, from: '+18052420289', to: '+6596317380'}).then(message => console.log(message));
   }
