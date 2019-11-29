@@ -28,6 +28,7 @@ try {
   }
 }
 
+// Read file
 const dataStr = fs.readFileSync(dataFd, {
   encoding: 'utf8'
 })
@@ -35,7 +36,7 @@ data = JSON.parse(dataStr)
 console.log(data);
 fileSize = dataStr.length
 
-
+// Graph for temperature of bin
 app.get('/', (req,res, next) => {
 
   const temperature_data = data.map((temperature) => {
@@ -48,7 +49,7 @@ app.get('/', (req,res, next) => {
   res.render('graph', {data: temperature_data})
 })
 
-
+// Graph for fullness of bin
 app.get('/content', (req, res) => {
   const content_data = data.map((fullness) => {
     return {
@@ -60,7 +61,7 @@ app.get('/content', (req, res) => {
 })
 
 
-
+// Append the temperature and fullness and current time into data.json
 const appendTemperatureAndFullness = (temperature, fullness) => {
   const currentTimeInSeconds = Math.floor(Date.now() / 1000)
   const item = [temperature, fullness, currentTimeInSeconds]
@@ -75,19 +76,22 @@ const appendTemperatureAndFullness = (temperature, fullness) => {
   fileSize += itemStr.length
 }
 
+// Send SMS
 const sendSMS = (temperature, fullness) => {
-
-  if (temperature >= 22 || fullness >= 90){
+  // Check if temperature and fullness before sending a message
+  if (temperature >= 40 || fullness >= 90){
     const body = temperature >=40 ? `temperature ${temperature} above threshold` : `The bin is at ${fullness} full`
-    client.messages.create({body: body, from: '+18052420289', to: '+6596317380'}).then(message => console.log(message));
+    // Insert from and to into the message
+    client.messages.create({body: body, from: '', to: ''}).then(message => console.log(message));
   }
 }
 
 
 
-
+// Retrieve temperature and fullness from server.
 app.get('/temp_fullness', (req, res) => {
   console.log(req.query);
+  // Get through query params
   const {temperature, fullness} = req.query
   const temperatureF = parseFloat(temperature)
   const fullnessF = parseFloat(fullness)

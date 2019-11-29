@@ -49,7 +49,7 @@ PIN12 P4.0
 PIN13 P4.2
 PIN14 P4.4
 PIN15 -
-PIN16 - 
+PIN16 -
 ```
 
 
@@ -67,4 +67,15 @@ PIN8 P3.3
 5V
 GND
 P2.4
+```
+
+
+### To set up statistics server
+To retrieve the accountSID and authToken go to https://www.twilio.com/docs/authy/twilioauth-sdk/quickstart/obtain-authy-api-key.
+Create a .env and add in the twillio accountSID and authToken. This is for starting the message portion.
+
+To start node server.
+Cd to fileDirectory and type:
+```
+node index.js
 ```
