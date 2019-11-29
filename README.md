@@ -82,5 +82,6 @@ Create a .env and add in the twillio accountSID and authToken. This is for start
 To start node server.
 Cd to fileDirectory and type:
 ```
+npm install
 node index.js
 ```
