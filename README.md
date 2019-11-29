@@ -4,7 +4,12 @@ Project BinIT
 
 ## Getting Started
 
-The main folder is in 2104_project. Import into code composer to run it
+The main folder is in 2104_project.  
+Import into code composer to run it  
+Fill up the following macros in main.c
+- SERVER_IP - statistic server ip address
+- SSID - wifi access point name
+- AP_PASSWORD - wifi access point password
 
 ### Ultrasonic Sensor 1
 
